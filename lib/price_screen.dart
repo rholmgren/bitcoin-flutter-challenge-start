@@ -12,9 +12,8 @@ class PriceScreen extends StatefulWidget {
 }
 
 class _PriceScreenState extends State<PriceScreen> {
-  double bitcoinValue;
-  double ethValue;
-  double ltcValue;
+  Map<String, String> coinValues = {};
+  bool isWaiting = false;
 
   String selectedCurrency = 'USD';
 
@@ -26,14 +25,12 @@ class _PriceScreenState extends State<PriceScreen> {
   }
 
   void getData() async {
+    isWaiting = true;
     try {
-      dynamic btcData = await CoinData().getCoinData(selectedCurrency, 'BTC');
-      dynamic ethData = await CoinData().getCoinData(selectedCurrency, 'ETH');
-      dynamic ltcData = await CoinData().getCoinData(selectedCurrency, 'LTC');
+      var data = await CoinData().getCoinData(selectedCurrency);
+      isWaiting = false;
       setState(() {
-        bitcoinValue = btcData['rate'];
-        ethValue = ethData['rate'];
-        ltcValue = ltcData['rate'];
+        coinValues = data;
       });
     } catch (e) {
       print(e);
@@ -85,6 +82,22 @@ class _PriceScreenState extends State<PriceScreen> {
     }
   }
 
+  Column makeCryptoCards() {
+    List<CryptoCard> cryptoCards = [];
+    for (String crypto in cryptoList) {
+      cryptoCards.add(
+        CryptoCard(
+            cryptoCurrency: crypto,
+            selectedCurrency: selectedCurrency,
+            value: isWaiting ? '?' : coinValues[crypto]),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: cryptoCards,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,24 +108,7 @@ class _PriceScreenState extends State<PriceScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              CryptoCard(
-                  cryptoCurrency: 'BTC',
-                  selectedCurrency: selectedCurrency,
-                  value: bitcoinValue.toString()),
-              CryptoCard(
-                  cryptoCurrency: 'ETH',
-                  selectedCurrency: selectedCurrency,
-                  value: ethValue.toString()),
-              CryptoCard(
-                  cryptoCurrency: 'LTC',
-                  selectedCurrency: selectedCurrency,
-                  value: ltcValue.toString()),
-            ],
-          ),
+          makeCryptoCards(),
           Container(
               height: 150.0,
               alignment: Alignment.center,
