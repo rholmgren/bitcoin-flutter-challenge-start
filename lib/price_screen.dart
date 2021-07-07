@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 
+import 'package:bitcoin_ticker/crypto_card.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -11,7 +12,9 @@ class PriceScreen extends StatefulWidget {
 }
 
 class _PriceScreenState extends State<PriceScreen> {
-  double bitcoinValueInUSD;
+  double bitcoinValue;
+  double ethValue;
+  double ltcValue;
 
   String selectedCurrency = 'USD';
 
@@ -24,9 +27,13 @@ class _PriceScreenState extends State<PriceScreen> {
 
   void getData() async {
     try {
-      dynamic coinData = await CoinData().getCoinData(selectedCurrency);
+      dynamic btcData = await CoinData().getCoinData(selectedCurrency, 'BTC');
+      dynamic ethData = await CoinData().getCoinData(selectedCurrency, 'ETH');
+      dynamic ltcData = await CoinData().getCoinData(selectedCurrency, 'LTC');
       setState(() {
-        bitcoinValueInUSD = coinData['rate'];
+        bitcoinValue = btcData['rate'];
+        ethValue = ethData['rate'];
+        ltcValue = ltcData['rate'];
       });
     } catch (e) {
       print(e);
@@ -88,26 +95,23 @@ class _PriceScreenState extends State<PriceScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Padding(
-            padding: EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0),
-            child: Card(
-              color: Colors.lightBlueAccent,
-              elevation: 5.0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
-                child: Text(
-                  '1 BTC = $bitcoinValueInUSD $selectedCurrency',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              CryptoCard(
+                  cryptoCurrency: 'BTC',
+                  selectedCurrency: selectedCurrency,
+                  value: bitcoinValue.toString()),
+              CryptoCard(
+                  cryptoCurrency: 'ETH',
+                  selectedCurrency: selectedCurrency,
+                  value: ethValue.toString()),
+              CryptoCard(
+                  cryptoCurrency: 'LTC',
+                  selectedCurrency: selectedCurrency,
+                  value: ltcValue.toString()),
+            ],
           ),
           Container(
               height: 150.0,
